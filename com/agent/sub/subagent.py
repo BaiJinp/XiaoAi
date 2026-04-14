@@ -1,5 +1,5 @@
-from com.agent.Loop import client, MODEL, messages
-from com.agent.tools import TOOLS
+from com.agent.Loop.Loop import client, MODEL, messages
+from com.agent.core.tools import TOOLS
 
 messages = [{"role":"system","content":"You are a helpful assistant."},{"role": "user", "content": "看下我今天的安排"}]
 

@@ -1,47 +1,47 @@
-from unittest import result
-
-PLAN = [{
-    "content": "这一步是干嘛的",
-    "activeFrom":"当它正在进行中时，可以用更自然的进行时描述",
-    "state": "pending" | "in_process" | "completed"
-}]
+ALLOWED_STATES = {"pending", "in_progress", "completed"}
 
 PLAN_ITEMS = {
-    "items":PLAN,
-    "rounds_since_update":0
+    "items": [],
+    "rounds_since_update": 0,
 }
 
-def __init__(self):
-    self.items = []
 
-# 新增任务，更新任务列表
-def update(self,task : list) ->str:
+def update(task: list):
     validated = []
-    in_process_count = 0
-    for index in task:
-        status = index.get("state")
-        if status == "in_process":
-            in_process_count += 1
-        validated.append({
-            "content": index["content"],
-            "activeFrom": index.get("activeFrom",""),
-            "state": status
-        })
-        if in_process_count > 1:
-            return "只能有一个正在进行的任务"
-        self.items = validated
-        if in_process_count >=3:
-            result.insert(0,{"type":"text","content":"任务列表过长，请精简"})
-        return  self.render()
+    in_progress_count = 0
 
-def render(self) -> str:
-    lines=[]
-    for index in self.items:
+    for item in task:
+        status = item.get("status", "pending")
+        if status not in ALLOWED_STATES:
+            return {"error": f"invalid status: {status}"}
+
+        if status == "in_progress":
+            in_progress_count += 1
+
+        validated.append(
+            {
+                "content": item.get("content", "").strip(),
+                "activeForm": item.get("activeForm", ""),
+                "status": status,
+            }
+        )
+
+    if in_progress_count > 1:
+        return {"error": "只能有一个 in_progress 任务"}
+
+    PLAN_ITEMS["items"] = validated
+    PLAN_ITEMS["rounds_since_update"] = 0
+    return {"ok": True, "plan_text": render(), "items": validated}
+
+
+def render() -> str:
+    lines = []
+    for item in PLAN_ITEMS["items"]:
         marker = {
             "pending": "[]",
-            "in_process": "[>]",
-            "completed": "[x]"
-        }[index["state"]]
-        lines.append(f"{marker} {index['content']}")
-        return "\n".join(lines)
+            "in_progress": "[>]",
+            "completed": "[x]",
+        }[item["status"]]
+        lines.append(f"{marker} {item['content']}")
+    return "\n".join(lines)
 

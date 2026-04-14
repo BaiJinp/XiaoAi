@@ -3,7 +3,9 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-from com.agent import plan
+from com.agent.core import skills
+from com.agent.task import plan
+
 WORKDIR = Path.cwd()
 
 TOOLS = [
@@ -38,7 +40,56 @@ TOOLS = [
                 "required": ["date"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "todo",
+            "description": "Rewrite the current session plan for multi-step work.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {"type": "string"},
+                                "status": {
+                                    "type": "string",
+                                    "enum": ["pending", "in_progress", "completed"]
+                                },
+                                "activeForm": {
+                                    "type": "string",
+                                    "description": "Optional present-continuous label."
+                                }
+                            },
+                            "required": ["content", "status"]
+                        }
+                    }
+                },
+                "required": ["items"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "load_skill",
+            "description": "Load detailed skill markdown by skill name.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Skill name from available skill list"
+                    }
+                },
+                "required": ["name"]
+            }
+        }
     }
+
 ]
 
 
@@ -77,12 +128,14 @@ def mock_get_current_weather(location, unit="celsius"):
 
 
 def mock_get_calendar(date):
+    if not date:
+        date = datetime.now().strftime("%Y-%m-%d")
     return {
         "date": date,
         "weekday": datetime.strptime(date, "%Y-%m-%d").strftime("%A"),
         "events": [
-            {"time": "09:30", "title": "站会"},
-            {"time": "14:00", "title": "需求评审"}
+            {"time": "09:30", "title": "董事会"},
+            {"time": "14:00", "title": "会见政府领导"}
         ],
         "source": "mock"
     }
@@ -91,15 +144,20 @@ def mock_get_calendar(date):
 def execute_tool_call(tool_call):
     name = tool_call.function.name
     args = json.loads(tool_call.function.arguments or "{}")
-
-    if name == "get_current_weather":
-        return mock_get_current_weather(
-            location=args.get("location", "北京"),
-            unit=args.get("unit", "celsius")
-        )
-    if name == "get_calendar":
-        return mock_get_calendar(args.get("date", datetime.now().strftime("%Y-%m-%d")))
-    return {"error": f"unknown tool: {name}"}
+    print(f"[trace][tool] dispatch: {name}, args={args}")
+    handler = TOOL_HANDLERS.get(name)
+    if not handler:
+        return {"error": f"unknown tool: {name}"}
+    try:
+        result = handler(**args)
+        preview = str(result)
+        if len(preview) > 200:
+            preview = preview[:200] + "..."
+        print(f"[trace][tool] result: {name} -> {preview}")
+        return result
+    except Exception as exc:
+        print(f"[trace][tool] failed: {name}, error={exc}")
+        return {"error": f"tool execute failed: {name}", "detail": str(exc)}
 
 
 def run_bash(command):
@@ -109,9 +167,35 @@ def run_bash(command):
     except Exception as e:
         return {"error": str(e)}
 
-TOOLS_HANDLES = {
-    "bash":run_bash,
-    "get_current_weather": mock_get_current_weather,
-    "get_calendar": mock_get_calendar,
-    "todo": lambda **kw: plan.update(kw["items"])
+TOOL_HANDLERS = {
+    "bash": lambda **kw: run_bash(kw["command"]),
+    "get_current_weather": lambda **kw: mock_get_current_weather(
+        location=kw.get("location", "北京"),
+        unit=kw.get("unit", "celsius"),
+    ),
+    "get_calendar": lambda **kw: mock_get_calendar(
+        kw.get("date", datetime.now().strftime("%Y-%m-%d"))
+    ),
+    "todo": lambda **kw: plan.update(kw.get("items", [])),
+    "load_skill": lambda **kw: skills.load_skill(kw["name"]),
 }
+
+# backward compatibility for old name
+TOOLS_HANDLES = TOOL_HANDLERS
+
+
+def _register_skills_into_tools():
+    skill_items = skills.load()
+    print(f"[trace][tool] register skill metadata into load_skill, count={len(skill_items)}")
+    for tool in TOOLS:
+        fn = tool.get("function", {})
+        if fn.get("name") == "load_skill":
+            name_prop = fn.get("parameters", {}).get("properties", {}).get("name", {})
+            name_prop["enum"] = [item["name"] for item in skill_items]
+            fn["description"] = "Load detailed skill markdown by skill name. Available: " + ", ".join(
+                [f"{item['name']}({item['description']})" for item in skill_items]
+            )
+            break
+
+
+_register_skills_into_tools()
