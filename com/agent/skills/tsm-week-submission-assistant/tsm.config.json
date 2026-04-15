@@ -1,0 +1,22 @@
+{
+  "action": "save-multi",
+  "week": {
+    "start": "2026-03-23",
+    "weekdaysOnly": true
+  },
+  "saveMulti": {
+    "rows": [
+      {
+        "projectName": "A6611L",
+        "jobContent": "打游戏",
+        "hours": [50, 50, 50, 50, 50]
+      },
+      {
+        "projectName": "测试新字段",
+        "jobContent": "打游戏",
+        "hours": [50, 50, 50, 50, 50]
+      }
+    ],
+    "skipReport": true
+  }
+}

@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 SKILLS = []
@@ -5,27 +6,105 @@ SKILL_REGISTRY = {}
 SKILLS_DIR = Path(__file__).resolve().parents[1] / "skills"
 
 
-def _extract_name_description(md_path: Path):
-    content = md_path.read_text(encoding="utf-8")
-    lines = content.splitlines()
+def _parse_front_matter(raw: str) -> tuple[dict[str, str], str]:
+    """解析开头的 YAML front matter（简单 key: value 行），返回 (字段, 正文)."""
+    if not raw.lstrip().startswith("---"):
+        return {}, raw
+    lines = raw.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}, raw
+    fields: dict[str, str] = {}
+    i = 1
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if stripped == "---":
+            body = "\n".join(lines[i + 1 :])
+            return fields, body
+        if stripped and not stripped.startswith("#") and ":" in stripped:
+            key, _, rest = stripped.partition(":")
+            key = key.strip()
+            val = rest.strip().strip('"').strip("'")
+            if key:
+                fields[key] = val
+        i += 1
+    return {}, raw
 
-    name = md_path.stem
-    description = f"Read skill: {name}"
 
-    for line in lines:
+def _strip_inline_md(text: str) -> str:
+    """去掉常见 Markdown 标记，便于生成简短 description。"""
+    s = text.strip()
+    s = re.sub(r"^>\s*", "", s)
+    s = re.sub(r"\*\*([^*]+)\*\*", r"\1", s)
+    s = re.sub(r"\*([^*]+)\*", r"\1", s)
+    s = re.sub(r"`([^`]+)`", r"\1", s)
+    s = re.sub(r"^\s*[-*+]\s+", "", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def _is_noise_line(line: str) -> bool:
+    t = line.strip()
+    if not t:
+        return True
+    if t.startswith("#"):
+        return True
+    if t.startswith("```"):
+        return True
+    if t.startswith("|"):
+        return True
+    if t.startswith("<!--"):
+        return True
+    if t in ("---", "***", "**", "*", "`"):
+        return True
+    if re.fullmatch(r"[*\-_`:~\s]+", t):
+        return True
+    if re.fullmatch(r"-{3,}", t) or re.fullmatch(r"\*{3,}", t):
+        return True
+    return False
+
+
+def _first_heading_title(body: str) -> str | None:
+    for line in body.splitlines():
         text = line.strip()
         if text.startswith("#"):
-            header = text.lstrip("#").strip()
-            if header:
-                name = header
-                break
+            title = text.lstrip("#").strip()
+            if title:
+                return _strip_inline_md(title)
+    return None
 
-    for line in lines:
-        text = line.strip()
-        if not text or text.startswith("#"):
+
+def _first_summary_line(body: str, max_len: int = 200) -> str | None:
+    for line in body.splitlines():
+        if _is_noise_line(line):
             continue
-        description = text[:120]
-        break
+        cleaned = _strip_inline_md(line)
+        if not cleaned or len(cleaned) < 2:
+            continue
+        if cleaned in ("---", "**", "*"):
+            continue
+        return cleaned[:max_len]
+    return None
+
+
+def _extract_name_description(md_path: Path):
+    content = md_path.read_text(encoding="utf-8")
+    fm, body = _parse_front_matter(content)
+
+    name = (fm.get("name") or "").strip() or md_path.parent.name or md_path.stem
+    description = (fm.get("description") or "").strip()
+
+    if not description:
+        description = _first_summary_line(body) or ""
+
+    if not description:
+        description = f"Read skill: {name}"
+
+    title = _first_heading_title(body)
+    if not (fm.get("name") or "").strip() and title:
+        name = title
+
+    description = description[:200]
 
     return name, description, content
 
@@ -45,6 +124,10 @@ def load():
 
     print(f"[trace][skills] loading markdown skills from: {SKILLS_DIR}")
     for md_file in sorted(SKILLS_DIR.rglob("*.md")):
+        if "templates" in md_file.parts:
+            continue
+        if md_file.name.lower() == "readme.md":
+            continue
         name, description, content = _extract_name_description(md_file)
         register_skill(name, description, md_file)
         SKILL_REGISTRY[name]["content"] = content

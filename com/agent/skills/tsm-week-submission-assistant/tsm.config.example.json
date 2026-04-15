@@ -1,0 +1,56 @@
+{
+  "_说明": "复制为 tsm.config.json 后按需修改；勿提交含真实业务内容的文件。鉴权只在 .env.tsm.local。",
+  "action": "query",
+  "week": {
+    "start": "2026-03-23",
+    "weekdaysOnly": true,
+    "times": null
+  },
+  "reportRange": null,
+  "env": {
+    "TSM_REPO_ROOT": "",
+    "TSM_SKILL_DIR": ""
+  },
+  "flags": {
+    "skipCalendar": false,
+    "useNaiveWeekdays": false,
+    "skipPersist": false,
+    "skipReportAfterSave": false,
+    "useRepoEnv": false
+  },
+  "saveDraft": {
+    "projectName": "",
+    "jobContent": ""
+  },
+  "saveMulti": {
+    "skipReport": true,
+    "rows": [
+      {
+        "projectName": "项目A",
+        "jobContent": "工作内容",
+        "hours": {
+          "2026-03-23": 50,
+          "2026-03-24": 50,
+          "2026-03-25": 50,
+          "2026-03-26": 50,
+          "2026-03-27": 50
+        }
+      },
+      {
+        "projectName": "项目B",
+        "jobContent": "工作内容",
+        "hours": {
+          "2026-03-23": 50,
+          "2026-03-24": 50,
+          "2026-03-25": 50,
+          "2026-03-26": 50,
+          "2026-03-27": 50
+        }
+      }
+    ]
+  },
+  "paths": {
+    "listJson": "",
+    "multiSpecJson": ""
+  }
+}
