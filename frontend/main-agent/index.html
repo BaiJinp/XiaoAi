@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>主 Agent 工作台</title>
+  <style>
+    :root {
+      --bg: #f6f8f7;
+      --surface: #ffffff;
+      --surface-2: #eef4f1;
+      --text: #16211d;
+      --muted: #60716a;
+      --line: #d8e1dc;
+      --primary: #0f766e;
+      --primary-strong: #0b5f59;
+      --amber: #b7791f;
+      --red: #b42318;
+      --ink: #26312d;
+      --shadow: 0 12px 30px rgba(22, 33, 29, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar {
+      background: #14231f;
+      color: #f3faf7;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+    }
+
+    .mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #e2f7ef;
+      color: #0f766e;
+      font-weight: 800;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      color: #a8bbb4;
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 40px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 12px;
+      background: transparent;
+      color: #d8e8e1;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav button.active {
+      background: #203833;
+      color: #ffffff;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px;
+      border: 1px solid rgba(216, 232, 225, 0.16);
+      border-radius: 8px;
+      color: #b8cac3;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 68px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.86);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 760;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--amber);
+    }
+
+    .dot.ok {
+      background: var(--primary);
+    }
+
+    .content {
+      padding: 26px 28px 34px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .agent-summary {
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .agent-title {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .agent-title h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .agent-title p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 780px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: #e7f5f1;
+      color: var(--primary-strong);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .agent-map {
+      min-height: 220px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 18px;
+      align-items: center;
+    }
+
+    .agent-map:before {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 50%;
+      border-top: 2px dashed #b9cac2;
+    }
+
+    .node {
+      position: relative;
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 14px;
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+
+    .node strong {
+      font-size: 15px;
+    }
+
+    .node span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .node.primary {
+      border-color: #80cbc0;
+      background: #edf9f6;
+    }
+
+    .controls {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      background: #fbfdfc;
+      outline: none;
+    }
+
+    .field input,
+    .field select {
+      height: 40px;
+      padding: 0 11px;
+    }
+
+    .field textarea {
+      min-height: 88px;
+      resize: vertical;
+      padding: 10px 11px;
+      line-height: 1.6;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .section {
+      padding: 18px;
+    }
+
+    .section h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      min-height: 44px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+      color: var(--ink);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .prompt {
+      color: var(--ink);
+      line-height: 1.8;
+      white-space: pre-wrap;
+      background: #fbfdfc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 104px;
+      font-size: 14px;
+    }
+
+    .result {
+      min-height: 140px;
+      max-height: 260px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #101915;
+      color: #d7efe7;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .run-output {
+      display: none;
+      gap: 12px;
+    }
+
+    .run-output.visible {
+      display: grid;
+    }
+
+    .run-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 66px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 7px;
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 8px;
+    }
+
+    .event-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+      font-size: 13px;
+    }
+
+    .event-row strong {
+      color: var(--primary-strong);
+      overflow-wrap: anywhere;
+    }
+
+    .event-row span {
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .artifact {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+    }
+
+    .artifact strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .artifact pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1100px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        height: auto;
+        padding: 16px;
+        align-items: flex-start;
+        gap: 12px;
+        flex-direction: column;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .agent-title {
+        flex-direction: column;
+      }
+
+      .agent-title h2 {
+        font-size: 24px;
+      }
+
+      .agent-map {
+        grid-template-columns: 1fr;
+      }
+
+      .agent-map:before {
+        display: none;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .run-summary,
+      .event-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">AI</div>
+        <div>
+          <strong>数字员工平台</strong>
+          <span>Main Agent Console</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="active" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h16M12 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          主 Agent
+        </button>
+        <button type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          任务编排
+        </button>
+        <button type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V7l8-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          治理策略
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        Java Runtime<br>
+        Approval Checkpoint<br>
+        Tool Governance
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1>主 Agent 工作台</h1>
+        <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">静态预览</span></div>
+      </header>
+
+      <section class="content">
+        <div class="hero">
+          <section class="panel agent-summary">
+            <div class="agent-title">
+              <div>
+                <h2 id="agentName">项目助理主 Agent</h2>
+                <p id="agentDescription">面向项目团队的主 Agent，负责理解任务、检索项目知识、编排模型和工具，并在高风险动作前触发审批。</p>
+              </div>
+              <span class="badge" id="agentType">project_assistant</span>
+            </div>
+            <div class="agent-map">
+              <div class="node">
+                <strong>自然语言目标</strong>
+                <span>识别意图、拆分任务、生成执行计划</span>
+              </div>
+              <div class="node primary">
+                <strong>主 Agent 编排</strong>
+                <span>协调知识、模型、工具和审批 checkpoint</span>
+              </div>
+              <div class="node">
+                <strong>企业执行边界</strong>
+                <span>低风险自动，高风险审批后续跑</span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel controls">
+            <div class="field">
+              <label for="apiBase">API Base</label>
+              <input id="apiBase" value="http://localhost:8080" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="tenantId">Tenant ID</label>
+              <input id="tenantId" value="100" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label for="ownerUserId">Owner User ID</label>
+              <input id="ownerUserId" value="200" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label for="agentId">Agent ID</label>
+              <input id="agentId" value="" inputmode="numeric" placeholder="创建草稿后自动填充">
+            </div>
+            <div class="field">
+              <label for="agentVersionId">Agent Version ID</label>
+              <input id="agentVersionId" value="" inputmode="numeric" placeholder="创建草稿后自动填充">
+            </div>
+            <div class="field">
+              <label for="assistantTaskType">试运行类型</label>
+              <select id="assistantTaskType">
+                <option value="weekly_report">项目周报</option>
+                <option value="risk_analysis">风险分析</option>
+                <option value="meeting_minutes">会议纪要</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="trialPrompt">试运行提示词</label>
+              <textarea id="trialPrompt">生成本周项目周报，包含进展、风险和下周计划。</textarea>
+            </div>
+            <div class="actions">
+              <button class="btn" id="refreshBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M18.5 9A7 7 0 0 0 6.2 6.4M5.5 15A7 7 0 0 0 17.8 17.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                刷新预览
+              </button>
+              <button class="btn primary" id="createBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                创建草稿
+              </button>
+              <button class="btn" id="trialRunBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5v14l11-7-11-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                试运行
+              </button>
+            </div>
+            <div class="result" id="apiResult">等待连接后端接口...</div>
+          </aside>
+        </div>
+
+        <div class="grid">
+          <section class="panel section">
+            <h3>核心能力</h3>
+            <div class="list" id="capabilities"></div>
+          </section>
+          <section class="panel section">
+            <h3>样例任务</h3>
+            <div class="list" id="sampleTasks"></div>
+          </section>
+          <section class="panel section">
+            <h3>治理规则</h3>
+            <div class="list" id="governanceRules"></div>
+          </section>
+        </div>
+
+        <section class="panel section run-output" id="runOutput">
+          <h3>试运行结果</h3>
+          <div class="run-summary" id="runSummary"></div>
+          <div>
+            <h3>执行轨迹</h3>
+            <div class="timeline" id="runTimeline"></div>
+          </div>
+          <div>
+            <h3>交付物</h3>
+            <div class="list" id="runArtifacts"></div>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <h3>角色提示词</h3>
+          <div class="prompt" id="rolePrompt"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const fallbackPreview = {
+      agentName: "项目助理主 Agent",
+      agentType: "project_assistant",
+      description: "面向项目团队的主 Agent，负责理解任务、检索项目知识、编排模型和工具，并在高风险动作前触发审批。",
+      rolePrompt: "你是企业项目助理主 Agent，负责把用户自然语言目标转为可执行计划，并在权限边界内协调知识、模型和工具完成任务。",
+      capabilities: ["项目知识问答", "项目周报生成", "风险分析", "会议纪要整理", "工具调用审批", "审批通过后断点续跑"],
+      sampleTasks: ["生成本周项目周报，包含进展、风险和下周计划", "基于会议记录整理行动项和负责人", "分析当前项目延期风险，并给出建议动作", "创建项目任务前先判断是否需要审批"],
+      governanceRules: ["低风险动作自动执行", "高风险工具调用必须审批", "审批通过后从 checkpoint 恢复", "所有运行事件、工具调用和模型调用留痕"]
+    };
+
+    const state = { preview: fallbackPreview };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderList(id, items) {
+      const el = document.getElementById(id);
+      el.innerHTML = (items || []).map(item => `<div class="item">${escapeHtml(item)}</div>`).join("");
+    }
+
+    function renderPreview(preview) {
+      state.preview = preview || fallbackPreview;
+      document.getElementById("agentName").textContent = state.preview.agentName || fallbackPreview.agentName;
+      document.getElementById("agentDescription").textContent = state.preview.description || fallbackPreview.description;
+      document.getElementById("agentType").textContent = state.preview.agentType || fallbackPreview.agentType;
+      document.getElementById("rolePrompt").textContent = state.preview.rolePrompt || fallbackPreview.rolePrompt;
+      renderList("capabilities", state.preview.capabilities);
+      renderList("sampleTasks", state.preview.sampleTasks);
+      renderList("governanceRules", state.preview.governanceRules);
+    }
+
+    function eventTitle(eventType) {
+      const titles = {
+        RUN_STARTED: "运行开始",
+        ASSISTANT_PLAN_CREATED: "计划已生成",
+        KNOWLEDGE_RETRIEVE: "检索知识",
+        KNOWLEDGE_RESULT: "知识结果",
+        MODEL_CALL: "调用模型",
+        MODEL_RESULT: "模型返回",
+        TOOL_CALL: "调用工具",
+        TOOL_BLOCKED: "等待审批",
+        TOOL_RESULT: "工具完成",
+        ASSISTANT_TASK_SUSPENDED: "任务挂起",
+        ASSISTANT_TASK_COMPLETED: "主 Agent 完成",
+        RUN_COMPLETED: "运行完成",
+        RUN_RESUMED: "恢复运行"
+      };
+      return titles[eventType] || eventType || "事件";
+    }
+
+    function parsePayload(payloadJson) {
+      if (!payloadJson) {
+        return {};
+      }
+      try {
+        return JSON.parse(payloadJson);
+      } catch (error) {
+        return { raw: payloadJson };
+      }
+    }
+
+    function renderRunResult(data) {
+      const runOutput = document.getElementById("runOutput");
+      runOutput.classList.add("visible");
+      const metrics = [
+        ["任务 ID", data.taskId || "-"],
+        ["任务状态", data.taskStatus || data.status || "-"],
+        ["运行 ID", data.runId || "-"],
+        ["Runtime", data.runtimeType || "-"]
+      ];
+      document.getElementById("runSummary").innerHTML = metrics
+        .map(([label, value]) => `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+        .join("");
+
+      const events = data.events || [];
+      document.getElementById("runTimeline").innerHTML = events.length
+        ? events.map((event) => {
+          const payload = parsePayload(event.payloadJson);
+          const detail = payload.content || payload.reason || payload.assistantTaskType || event.eventSummary || "";
+          return `<div class="event-row"><strong>${escapeHtml(eventTitle(event.eventType))}</strong><span>${escapeHtml(detail)}</span></div>`;
+        }).join("")
+        : `<div class="item">暂无运行事件</div>`;
+
+      const artifacts = data.artifacts || [];
+      document.getElementById("runArtifacts").innerHTML = artifacts.length
+        ? artifacts.map((artifact) => `<div class="artifact"><strong>${escapeHtml(artifact.artifactName || artifact.artifactType || "交付物")}</strong><pre>${escapeHtml(artifact.contentText || artifact.metadataJson || "")}</pre></div>`).join("")
+        : `<div class="item">${escapeHtml(data.resultSummary || "暂无交付物")}</div>`;
+    }
+
+    function setStatus(text, ok) {
+      document.getElementById("statusText").textContent = text;
+      document.getElementById("statusDot").classList.toggle("ok", Boolean(ok));
+    }
+
+    function apiBase() {
+      return document.getElementById("apiBase").value.replace(/\/$/, "");
+    }
+
+    function requestHeaders(extraHeaders = {}) {
+      return {
+        "Content-Type": "application/json",
+        "X-Tenant-Id": String(numericValue("tenantId") || 100),
+        "X-User-Id": String(numericValue("ownerUserId") || 200),
+        "X-Username": "main-agent-console",
+        "X-Trace-Id": `TRACE-${Date.now()}`,
+        ...extraHeaders
+      };
+    }
+
+    async function apiFetch(path, options = {}) {
+      const response = await fetch(`${apiBase()}${path}`, {
+        ...options,
+        headers: requestHeaders(options.headers || {})
+      });
+      const body = await response.json();
+      if (!response.ok || (body.code && body.code !== "0")) {
+        throw new Error(body.message || `HTTP ${response.status}`);
+      }
+      return body;
+    }
+
+    function numericValue(id) {
+      const value = document.getElementById(id).value;
+      return value ? Number(value) : null;
+    }
+
+    async function loadPreview() {
+      try {
+        const body = await apiFetch("/api/v1/main-agent/preview", {
+          method: "GET",
+          headers: {}
+        });
+        const data = body.data || body;
+        renderPreview(data);
+        document.getElementById("apiResult").textContent = JSON.stringify(body, null, 2);
+        setStatus("后端已连接", true);
+      } catch (error) {
+        renderPreview(fallbackPreview);
+        document.getElementById("apiResult").textContent = "后端未连接，已显示静态模板。\n" + error.message;
+        setStatus("静态预览", false);
+      }
+    }
+
+    async function createDraft() {
+      const ownerUserId = Number(document.getElementById("ownerUserId").value || 0);
+      try {
+        const body = await apiFetch("/api/v1/main-agent/draft", {
+          method: "POST",
+          body: JSON.stringify({ ownerUserId })
+        });
+        document.getElementById("apiResult").textContent = JSON.stringify(body, null, 2);
+        const data = body.data || body;
+        if (data.agentId) {
+          document.getElementById("agentId").value = data.agentId;
+        }
+        if (data.agentVersionId) {
+          document.getElementById("agentVersionId").value = data.agentVersionId;
+        }
+        setStatus("草稿已创建", true);
+      } catch (error) {
+        document.getElementById("apiResult").textContent = "创建草稿失败。\n" + error.message;
+        setStatus("后端未连接", false);
+      }
+    }
+
+    async function trialRun() {
+      const agentId = numericValue("agentId");
+      const agentVersionId = numericValue("agentVersionId");
+      const userId = numericValue("ownerUserId");
+      if (!agentId || !userId) {
+        document.getElementById("apiResult").textContent = "请先填写 Agent ID 和 Owner User ID；也可以先点击创建草稿自动填充。";
+        setStatus("等待试运行参数", false);
+        return;
+      }
+      try {
+        const body = await apiFetch("/api/v1/main-agent/trial-run", {
+          method: "POST",
+          body: JSON.stringify({
+            agentId,
+            agentVersionId,
+            userId,
+            assistantTaskType: document.getElementById("assistantTaskType").value,
+            prompt: document.getElementById("trialPrompt").value
+          })
+        });
+        const data = body.data || body;
+        renderRunResult(data);
+        document.getElementById("apiResult").textContent = JSON.stringify(body, null, 2);
+        setStatus("试运行完成", true);
+      } catch (error) {
+        document.getElementById("apiResult").textContent = "试运行失败。\n" + error.message;
+        setStatus("后端未连接", false);
+      }
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadPreview);
+    document.getElementById("createBtn").addEventListener("click", createDraft);
+    document.getElementById("trialRunBtn").addEventListener("click", trialRun);
+    renderPreview(fallbackPreview);
+  </script>
+</body>
+</html>

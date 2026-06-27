@@ -1,0 +1,43 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 1200px;
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #1f2937;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.agent-workbench-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eef4ff 0%, #f7f9fc 36%, #f5f7fb 100%);
+}
+
+.agent-workbench-grid {
+  display: grid;
+  grid-template-columns: 260px minmax(520px, 1fr) 360px;
+  gap: 16px;
+  height: calc(100vh - 88px);
+  padding: 0 20px 20px;
+}
+
+.agent-workbench-card {
+  height: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 8%);
+}
+
+.agent-workbench-scroll {
+  height: 100%;
+  overflow: auto;
+}

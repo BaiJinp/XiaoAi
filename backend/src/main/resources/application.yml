@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: enterprise-agent-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/enterprise_agent
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: true
+      logic-not-delete-value: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+xiaoai:
+  runtime:
+    checkpoint:
+      cleanup:
+        enabled: false
+        fixed-delay-ms: 300000
+        suspended-expire-hours: 24
+        resuming-stale-minutes: 30
+        completed-retention-hours: 168
+  task-event:
+    retention:
+      enabled: false
+      fixed-delay-ms: 300000
+      tool-denied-retention-days: 90

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.xiaoai.agent.collaboration.service.impl.QualityGateServiceImplTest
+-------------------------------------------------------------------------------
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.078 s -- in com.xiaoai.agent.collaboration.service.impl.QualityGateServiceImplTest
