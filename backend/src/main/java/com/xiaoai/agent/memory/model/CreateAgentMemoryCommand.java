@@ -9,6 +9,8 @@ import lombok.Setter;
 @Setter
 public class CreateAgentMemoryCommand {
 
+    private Long tenantId;
+
     @NotNull
     private Long agentId;
 

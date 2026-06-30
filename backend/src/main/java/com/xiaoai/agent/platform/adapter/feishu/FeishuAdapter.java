@@ -17,10 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 飞书/Lark平台适配器
- * <p>
- * 支持飞书机器人消息收发、事件回调接收
- * </p>
+ * 椋炰功/Lark骞冲彴閫傞厤鍣? * <p>
+ * 鏀寔椋炰功鏈哄櫒浜烘秷鎭敹鍙戙€佷簨浠跺洖璋冩帴鏀? * </p>
  *
  * @author Agent-xiaoAI Team
  * @date 2026-06-27
@@ -41,13 +39,11 @@ public class FeishuAdapter implements PlatformAdapter {
     private long tokenExpireTime;
 
     /**
-     * 缓存的用户信息
-     */
+     * 缂撳瓨鐨勭敤鎴蜂俊鎭?     */
     private final Map<String, String> userInfoCache = new ConcurrentHashMap<>();
 
     /**
-     * 缓存的群组信息
-     */
+     * 缂撳瓨鐨勭兢缁勪俊鎭?     */
     private final Map<String, String> chatInfoCache = new ConcurrentHashMap<>();
 
     public FeishuAdapter(FeishuConfig config) {
@@ -161,7 +157,7 @@ public class FeishuAdapter implements PlatformAdapter {
 
             ObjectNode requestBody = objectMapper.createObjectNode();
             requestBody.put("receive_id", chatId);
-            // 飞书的富文本类型为 post
+            // 椋炰功鐨勫瘜鏂囨湰绫诲瀷涓?post
             requestBody.put("msg_type", "post");
 
             ObjectNode contentNode = objectMapper.createObjectNode();
@@ -169,7 +165,7 @@ public class FeishuAdapter implements PlatformAdapter {
             ObjectNode titleNode = objectMapper.createObjectNode();
             titleNode.put("tag", "text");
             titleNode.put("text", "Message");
-            ObjectNode contentArrayNode = objectMapper.createArrayNode();
+            com.fasterxml.jackson.databind.node.ArrayNode contentArrayNode = objectMapper.createArrayNode();
             contentArrayNode.add(titleNode);
 
             ObjectNode textNode = objectMapper.createObjectNode();
@@ -226,7 +222,7 @@ public class FeishuAdapter implements PlatformAdapter {
             contentNode.put("text", message);
             requestBody.put("content", contentNode.toString());
 
-            // 设置回复的消息ID
+            // 璁剧疆鍥炲鐨勬秷鎭疘D
             requestBody.put("reply_in_thread", true);
             requestBody.put("uuid", replyToMessageId);
 
@@ -323,10 +319,9 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 处理事件回调
+     * 澶勭悊浜嬩欢鍥炶皟
      *
-     * @param payload 事件请求体
-     * @return 处理结果
+     * @param payload 浜嬩欢璇锋眰浣?     * @return 澶勭悊缁撴灉
      */
     public String handleEventCallback(String payload) {
         if (!running.get()) {
@@ -337,14 +332,14 @@ public class FeishuAdapter implements PlatformAdapter {
         try {
             JsonNode jsonNode = objectMapper.readTree(payload);
 
-            // 处理URL验证挑战
+            // 澶勭悊URL楠岃瘉鎸戞垬
             if (jsonNode.has("type") && "url_verification".equals(jsonNode.get("type").asText())) {
                 String challenge = jsonNode.get("challenge").asText("");
                 log.debug("Responding to URL verification challenge");
                 return "{\"challenge\": \"" + challenge + "\"}";
             }
 
-            // 构建PlatformMessage并交由handler处理
+            // 鏋勫缓PlatformMessage骞朵氦鐢県andler澶勭悊
             PlatformMessage message = buildPlatformMessageFromEvent(jsonNode);
 
             if (messageHandler != null && message != null) {
@@ -360,7 +355,7 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 刷新tenant_access_token
+     * 鍒锋柊tenant_access_token
      */
     private void refreshTenantAccessToken() throws Exception {
         ObjectNode requestBody = objectMapper.createObjectNode();
@@ -389,7 +384,7 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 获取有效的tenant_access_token
+     * 鑾峰彇鏈夋晥鐨則enant_access_token
      */
     private String getValidTenantAccessToken() throws Exception {
         if (tenantAccessToken == null || System.currentTimeMillis() > tokenExpireTime) {
@@ -399,8 +394,7 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 验证适配器状态
-     */
+     * 楠岃瘉閫傞厤鍣ㄧ姸鎬?     */
     private boolean validateState() {
         if (!running.get()) {
             log.warn("FeishuAdapter is not running");
@@ -414,7 +408,7 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 从事件数据构建PlatformMessage
+     * 浠庝簨浠舵暟鎹瀯寤篜latformMessage
      */
     private PlatformMessage buildPlatformMessageFromEvent(JsonNode data) {
         try {
@@ -455,7 +449,7 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 解析飞书消息内容JSON
+     * 瑙ｆ瀽椋炰功娑堟伅鍐呭JSON
      */
     private String parseMessageContent(String contentJson) {
         try {
@@ -470,7 +464,7 @@ public class FeishuAdapter implements PlatformAdapter {
     }
 
     /**
-     * 统一错误处理
+     * 缁熶竴閿欒澶勭悊
      */
     private void handleError(Exception e) {
         if (messageHandler != null) {

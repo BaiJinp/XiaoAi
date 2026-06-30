@@ -12,6 +12,8 @@ public class ChatModelCommand {
     @NotNull
     private Long modelId;
 
+    private Long tenantId;
+
     private Long taskId;
 
     private Long runId;
@@ -22,8 +24,6 @@ public class ChatModelCommand {
     private String prompt;
 
     /**
-     * 响应格式约束（用于 Structured Output）
-     * 设置后模型将强制返回符合指定格式的输出
-     */
+     * 鍝嶅簲鏍煎紡绾︽潫锛堢敤浜?Structured Output锛?     * 璁剧疆鍚庢ā鍨嬪皢寮哄埗杩斿洖绗﹀悎鎸囧畾鏍煎紡鐨勮緭鍑?     */
     private ResponseFormat responseFormat;
 }

@@ -12,10 +12,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
- * 定时任务调度器
- * 定期检查并执行到期的任务
- */
-@Component
+ * 瀹氭椂浠诲姟璋冨害鍣? * 瀹氭湡妫€鏌ュ苟鎵ц鍒版湡鐨勪换鍔? */
+@Component("scheduledTaskExecutor")
 public class TaskScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(TaskScheduler.class);
@@ -28,16 +26,14 @@ public class TaskScheduler {
     }
 
     /**
-     * 每分钟检查一次到期任务
-     */
-    @Scheduled(fixedRate = 60000) // 60秒
+     * 姣忓垎閽熸鏌ヤ竴娆″埌鏈熶换鍔?     */
+    @Scheduled(fixedRate = 60000) // 60绉?
     public void checkAndExecuteTasks() {
         log.debug("Checking for scheduled tasks to execute...");
 
         try {
-            // 获取所有租户（这里简化处理，实际应该遍历所有租户）
-            List<Long> tenantIds = List.of(100L); // TODO: 从配置或数据库获取
-
+            // 鑾峰彇鎵€鏈夌鎴凤紙杩欓噷绠€鍖栧鐞嗭紝瀹為檯搴旇閬嶅巻鎵€鏈夌鎴凤級
+            List<Long> tenantIds = List.of(100L); // TODO: 浠庨厤缃垨鏁版嵁搴撹幏鍙?
             for (Long tenantId : tenantIds) {
                 List<ScheduledTask> enabledTasks = scheduledTaskService.getEnabledTasks(tenantId);
 
@@ -47,17 +43,17 @@ public class TaskScheduler {
                                 task.getId(), task.getTaskCode(), task.getTaskName());
 
                         try {
-                            // 执行任务
+                            // 鎵ц浠诲姟
                             scheduledTaskService.executeNow(task.getId());
 
-                            // 记录成功
+                            // 璁板綍鎴愬姛
                             scheduledTaskService.recordExecution(task.getId(), true);
 
                             log.info("Task executed successfully: id={}", task.getId());
 
                         } catch (Exception e) {
                             log.error("Failed to execute task: id={}", task.getId(), e);
-                            // 记录失败
+                            // 璁板綍澶辫触
                             scheduledTaskService.recordExecution(task.getId(), false);
                         }
                     }
@@ -70,8 +66,7 @@ public class TaskScheduler {
     }
 
     /**
-     * 检查任务是否到期
-     */
+     * 妫€鏌ヤ换鍔℃槸鍚﹀埌鏈?     */
     private boolean isDueForExecution(ScheduledTask task) {
         if (task.getNextExecutionTime() == null) {
             return false;

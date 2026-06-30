@@ -24,9 +24,8 @@ import java.util.Base64;
 import java.net.URLEncoder;
 
 /**
- * 钉钉平台适配器
- * <p>
- * 支持钉钉机器人消息收发、Webhook回调接收
+ * 閽夐拤骞冲彴閫傞厤鍣? * <p>
+ * 鏀寔閽夐拤鏈哄櫒浜烘秷鎭敹鍙戙€乄ebhook鍥炶皟鎺ユ敹
  * </p>
  *
  * @author Agent-xiaoAI Team
@@ -48,13 +47,11 @@ public class DingtalkAdapter implements PlatformAdapter {
     private long tokenExpireTime;
 
     /**
-     * 缓存的用户信息
-     */
+     * 缂撳瓨鐨勭敤鎴蜂俊鎭?     */
     private final Map<String, String> userInfoCache = new ConcurrentHashMap<>();
 
     /**
-     * 缓存的群组信息
-     */
+     * 缂撳瓨鐨勭兢缁勪俊鎭?     */
     private final Map<String, String> chatInfoCache = new ConcurrentHashMap<>();
 
     public DingtalkAdapter(DingtalkConfig config) {
@@ -131,9 +128,9 @@ public class DingtalkAdapter implements PlatformAdapter {
             textNode.put("content", message);
             requestBody.set("text", textNode);
 
-            // 如果是群聊，设置@的人
+            // 濡傛灉鏄兢鑱婏紝璁剧疆@鐨勪汉
             if (chatId != null && !chatId.isEmpty()) {
-                requestBody.get("at").put("atUserIds", new String[]{chatId});
+                ((ObjectNode) requestBody.get("at")).set("atUserIds", objectMapper.createArrayNode().add(chatId));
             }
 
             var response = restClient.post()
@@ -206,8 +203,7 @@ public class DingtalkAdapter implements PlatformAdapter {
 
     @Override
     public boolean replyMessage(String chatId, String replyToMessageId, String message) {
-        // 钉钉机器人不支持直接回复特定消息，退化为普通发送
-        log.debug("DingTalk robot does not support direct reply, falling back to normal send");
+        // 閽夐拤鏈哄櫒浜轰笉鏀寔鐩存帴鍥炲鐗瑰畾娑堟伅锛岄€€鍖栦负鏅€氬彂閫?        log.debug("DingTalk robot does not support direct reply, falling back to normal send");
         return sendMessage(chatId, message);
     }
 
@@ -286,10 +282,9 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 处理Webhook回调消息
+     * 澶勭悊Webhook鍥炶皟娑堟伅
      *
-     * @param payload Webhook请求体
-     * @return 处理结果
+     * @param payload Webhook璇锋眰浣?     * @return 澶勭悊缁撴灉
      */
     public String handleWebhookCallback(String payload) {
         if (!running.get()) {
@@ -315,7 +310,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 刷新access_token
+     * 鍒锋柊access_token
      */
     private void refreshAccessToken() throws Exception {
         var response = restClient.get()
@@ -338,7 +333,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 获取有效的access_token
+     * 鑾峰彇鏈夋晥鐨刟ccess_token
      */
     private String getValidAccessToken() throws Exception {
         if (accessToken == null || System.currentTimeMillis() > tokenExpireTime) {
@@ -348,7 +343,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 构建带签名的Webhook URL
+     * 鏋勫缓甯︾鍚嶇殑Webhook URL
      */
     private String buildSignedWebhookUrl() throws Exception {
         String baseUrl = config.getSendMessageUrlTemplate() + config.getRobotCode();
@@ -363,7 +358,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 生成签名
+     * 鐢熸垚绛惧悕
      */
     private String generateSign(long timestamp, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
         String stringToSign = timestamp + "\n" + secret;
@@ -375,8 +370,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 验证适配器状态
-     */
+     * 楠岃瘉閫傞厤鍣ㄧ姸鎬?     */
     private boolean validateState() {
         if (!running.get()) {
             log.warn("DingtalkAdapter is not running");
@@ -390,7 +384,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 从Webhook数据构建PlatformMessage
+     * 浠嶹ebhook鏁版嵁鏋勫缓PlatformMessage
      */
     private PlatformMessage buildPlatformMessageFromWebhook(JsonNode data) {
         try {
@@ -417,7 +411,7 @@ public class DingtalkAdapter implements PlatformAdapter {
     }
 
     /**
-     * 统一错误处理
+     * 缁熶竴閿欒澶勭悊
      */
     private void handleError(Exception e) {
         if (messageHandler != null) {

@@ -117,7 +117,7 @@ public ConversationMessage addMessage(Long conversationId, String role, String c
         }
 
         // 获取当前最大序号
-        Integer maxSeq = messageMapper.selectCount(new LambdaQueryWrapper<ConversationMessage>()
+        Long maxSeq = messageMapper.selectCount(new LambdaQueryWrapper<ConversationMessage>()
                 .eq(ConversationMessage::getConversationId, conversationId));
 
         ConversationMessage message = new ConversationMessage();
@@ -126,7 +126,7 @@ public ConversationMessage addMessage(Long conversationId, String role, String c
         message.setMessageCode(UUID.randomUUID().toString());
         message.setRole(role);
         message.setContent(content);
-        message.setSequenceNumber(maxSeq + 1);
+        message.setSequenceNumber(maxSeq.intValue() + 1);
         message.setTaskId(taskId);
         message.setCompressed(false);
         message.setCreatedAt(OffsetDateTime.now());

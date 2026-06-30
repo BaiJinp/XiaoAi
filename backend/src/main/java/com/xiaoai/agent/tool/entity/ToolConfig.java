@@ -13,6 +13,8 @@ public class ToolConfig extends TenantEntity {
 
     private String toolName;
 
+    private String description;
+
     private String toolType;
 
     private String riskLevel;

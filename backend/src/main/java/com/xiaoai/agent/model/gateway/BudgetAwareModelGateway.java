@@ -3,12 +3,14 @@ package com.xiaoai.agent.model.gateway;
 import com.xiaoai.agent.common.api.ErrorCode;
 import com.xiaoai.agent.common.exception.BusinessException;
 import com.xiaoai.agent.model.model.ChatModelCommand;
+import com.xiaoai.agent.model.model.ChatModelChunk;
 import com.xiaoai.agent.model.model.ChatModelResponse;
 import com.xiaoai.agent.model.model.EmbeddingModelCommand;
 import com.xiaoai.agent.model.model.EmbeddingModelResponse;
 import com.xiaoai.agent.safety.TokenBudgetTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 /**
  * 预算感知的模型网关
@@ -80,6 +82,11 @@ public ChatModelResponse chat(ChatModelCommand command) {
         }
 
         return response;
+    }
+
+    @Override
+    public Flux<ChatModelChunk> chatStream(ChatModelCommand command) {
+        return delegate.chatStream(command);
     }
 
     @Override

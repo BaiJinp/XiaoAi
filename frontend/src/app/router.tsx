@@ -30,6 +30,21 @@ const CollaborationCreatePage = lazy(() =>
     default: module.CollaborationCreatePage,
   })),
 );
+const ModelConfigPage = lazy(() =>
+  import('../pages/model-config/ModelConfigPage').then((module) => ({
+    default: module.ModelConfigPage,
+  })),
+);
+const SkillManagePage = lazy(() =>
+  import('../pages/skill-manage/SkillManagePage').then((module) => ({
+    default: module.SkillManagePage,
+  })),
+);
+const MemoryManagePage = lazy(() =>
+  import('../pages/memory-manage/MemoryManagePage').then((module) => ({
+    default: module.MemoryManagePage,
+  })),
+);
 
 function withRouteLoading(element: React.ReactNode) {
   return <Suspense fallback={<Spin style={{ display: 'block', margin: '80px auto' }} />}>{element}</Suspense>;
@@ -42,9 +57,12 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: withRouteLoading(<AgentWorkbenchPage />) },
       { path: 'workbench', element: withRouteLoading(<AgentWorkbenchPage />) },
+      { path: 'model-config', element: withRouteLoading(<ModelConfigPage />) },
       { path: 'knowledge', element: withRouteLoading(<KnowledgePage />) },
       { path: 'agent-config', element: withRouteLoading(<ProjectAssistantConfigPage />) },
       { path: 'tool-audit', element: withRouteLoading(<ToolAuditPage />) },
+      { path: 'skill-manage', element: withRouteLoading(<SkillManagePage />) },
+      { path: 'memory-manage', element: withRouteLoading(<MemoryManagePage />) },
       { path: 'tasks/:taskId', element: withRouteLoading(<TaskDetailPage />) },
       { path: 'collaboration', element: withRouteLoading(<CollaborationCreatePage />) },
       { path: 'collaboration/:sessionId', element: withRouteLoading(<CollaborationSessionPage />) },

@@ -30,6 +30,10 @@ public class UserProfile extends TenantEntity {
      */
     private String preferencesJson;
 
+    private String interests;
+
+    private String expertise;
+
     /**
      * 行为模式（JSON）
      * 例如：{"active_hours": "9-18", "task_types": ["code_review", "debugging"]}
@@ -52,7 +56,7 @@ public class UserProfile extends TenantEntity {
      * 常用工具（JSON 数组）
      * 例如：["git", "docker", "python"]
      */
-    private String常用工具Json;
+    private String commonToolsJson;
 
     /**
      * 对话历史摘要

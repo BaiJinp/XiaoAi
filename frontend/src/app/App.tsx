@@ -3,10 +3,13 @@ import { Layout, Space, Typography } from 'antd';
 
 const navLinks = [
   { label: 'Agent 工作台', to: '/workbench' },
+  { label: '模型配置', to: '/model-config' },
   { label: '协作会话', to: '/collaboration' },
   { label: '知识入口', to: '/knowledge' },
   { label: '项目助理配置', to: '/agent-config' },
   { label: 'Tool Audit', to: '/tool-audit' },
+  { label: '技能管理', to: '/skill-manage' },
+  { label: '记忆管理', to: '/memory-manage' },
 ];
 
 export function App() {

@@ -1,37 +1,35 @@
 package com.xiaoai.agent.terminal;
 
+import java.util.Map;
+
 /**
- * 终端后端接口
- * 支持在不同的执行环境中运行命令
- *
+ * 缁堢鍚庣鎺ュ彛
+ * 鏀寔鍦ㄤ笉鍚岀殑鎵ц鐜涓繍琛屽懡浠? *
  * @author Agent-xiaoAI Team
  * @date 2026-06-26
  */
 public interface TerminalBackend {
 
     /**
-     * 获取后端类型
+     * 鑾峰彇鍚庣绫诲瀷
      */
     String getBackendType();
 
     /**
-     * 执行命令
+     * 鎵ц鍛戒护
      */
     TerminalResult execute(String command, TerminalConfig config);
 
     /**
-     * 检查后端是否可用
-     */
+     * 妫€鏌ュ悗绔槸鍚﹀彲鐢?     */
     boolean isAvailable();
 
     /**
-     * 获取后端状态
-     */
+     * 鑾峰彇鍚庣鐘舵€?     */
     BackendStatus getStatus();
 
     /**
-     * 后端状态
-     */
+     * 鍚庣鐘舵€?     */
     enum BackendStatus {
         AVAILABLE,
         UNAVAILABLE,
@@ -39,7 +37,7 @@ public interface TerminalBackend {
     }
 
     /**
-     * 终端结果
+     * 缁堢缁撴灉
      */
     class TerminalResult {
         private final int exitCode;
@@ -61,7 +59,7 @@ public boolean isSuccess() { return exitCode == 0; }
     }
 
     /**
-     * 终端配置
+     * 缁堢閰嶇疆
      */
     class TerminalConfig {
         private String workingDirectory;

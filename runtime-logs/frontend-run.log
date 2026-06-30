@@ -1,25 +1,9 @@
 
-> agent-xiaoai-frontend@0.1.0 dev
-> vite --host 127.0.0.1
+> agent-xiaoai-frontend@0.1.0 dev E:\WorkTree\Agent-xiaoAI\frontend
+> vite "--" "--host" "0.0.0.0"
 
 
-  [32m[1mVITE[22m v8.0.16[39m  [2mready in [0m[1m189[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v8.0.16[39m  [2mready in [0m[1m173[22m[2m[0m ms[22m
 
-  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
-[2m16:18:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx, /src/pages/agent-workbench/components/ExecutionPanel.tsx, /src/features/chat/components/ChatTimeline.tsx, /src/features/runtime-events/components/ExecutionTimeline.tsx[22m
-[2m16:24:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m16:27:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m16:29:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m16:45:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m16:58:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/approval-card/components/ApprovalCard.tsx[22m
-[2m16:58:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/runtime-events/components/ExecutionTimeline.tsx[22m
-[2m16:58:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/chat/components/ChatTimeline.tsx[22m
-[2m16:58:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/components/ExecutionPanel.tsx[22m
-[2m16:58:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m16:58:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/runtime-events/components/ExecutionTimeline.tsx[22m
-[2m16:58:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m16:59:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m19:50:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/AgentWorkbenchPage.tsx[22m
-[2m19:50:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/features/runtime-events/components/ExecutionTimeline.tsx[22m
-[2m19:53:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/components/ExecutionPanel.tsx[22m
-[2m19:53:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/agent-workbench/components/ExecutionPanel.tsx[22m
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m

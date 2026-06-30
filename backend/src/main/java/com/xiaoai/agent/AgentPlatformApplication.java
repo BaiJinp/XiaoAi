@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@MapperScan("com.xiaoai.agent.**.mapper")
+@MapperScan({"com.xiaoai.agent.**.mapper", "com.xiaoai.agent.user.modeling"})
 @EnableScheduling
 @SpringBootApplication
 public class AgentPlatformApplication {

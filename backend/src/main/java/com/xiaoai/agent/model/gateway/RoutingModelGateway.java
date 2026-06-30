@@ -9,7 +9,6 @@ import com.xiaoai.agent.model.model.ChatModelChunk;
 import com.xiaoai.agent.model.model.ChatModelResponse;
 import com.xiaoai.agent.model.model.EmbeddingModelCommand;
 import com.xiaoai.agent.model.model.EmbeddingModelResponse;
-import reactor.core.publisher.Flux;
 import com.xiaoai.agent.model.service.ModelConfigService;
 import com.xiaoai.agent.model.service.ModelProviderService;
 import com.xiaoai.agent.safety.TokenBudgetTracker;
@@ -17,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
@@ -56,14 +56,12 @@ public class RoutingModelGateway implements ModelGateway {
     }
 
     @Override
-public ChatModelResponse chat(ChatModelCommand command) {
-        // 预算检查
+    public ChatModelResponse chat(ChatModelCommand command) {
         checkBudget(command);
 
         ModelGatewayContext context = context(command.getModelId());
         ChatModelResponse response = adapter(context).chat(command, context);
 
-        // 记录实际 token 使用量
         if (response != null && response.getTotalTokens() != null) {
             Long taskId = command.getTaskId();
             if (taskId != null) {
@@ -78,13 +76,11 @@ public ChatModelResponse chat(ChatModelCommand command) {
 
     @Override
     public Flux<ChatModelChunk> chatStream(ChatModelCommand command) {
-        // 预算检查
         checkBudget(command);
 
         ModelGatewayContext context = context(command.getModelId());
         Flux<ChatModelChunk> stream = adapter(context).chatStream(command, context);
 
-        // 在流结束时记录 token 使用量
         return stream.doOnNext(chunk -> {
             if (chunk.isDone() && chunk.getTotalTokens() != null) {
                 Long taskId = command.getTaskId();
@@ -97,5 +93,64 @@ public ChatModelResponse chat(ChatModelCommand command) {
         });
     }
 
-    /**
- 
+    @Override
+    public EmbeddingModelResponse embedding(EmbeddingModelCommand command) {
+        ModelGatewayContext context = context(command.getModelId());
+        return adapter(context).embedding(command, context);
+    }
+
+    private ModelGatewayContext context(Long modelId) {
+        ModelConfig model = modelConfigService.getModelConfig(modelId);
+        if (model == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "Model config not found");
+        }
+
+        ModelProvider provider = modelProviderService.getModelProvider(model.getProviderId());
+        if (provider == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "Model provider not found");
+        }
+        if (!"active".equals(provider.getStatus())) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Model provider is not active");
+        }
+
+        return ModelGatewayContext.builder()
+                .model(model)
+                .provider(provider)
+                .build();
+    }
+
+    private ModelGatewayAdapter adapter(ModelGatewayContext context) {
+        String providerType = context.getProvider().getProviderType();
+        ModelGatewayAdapter adapter = adapters.get(providerType);
+        if (adapter == null) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Unsupported model provider type: " + providerType);
+        }
+        return adapter;
+    }
+
+    private void checkBudget(ChatModelCommand command) {
+        if (budgetTracker == null || command == null) {
+            return;
+        }
+
+        long estimatedTokens = estimateTokens(command.getPrompt());
+        TokenBudgetTracker.BudgetCheckResult tenantCheck =
+                budgetTracker.checkTenantDailyBudget(command.getTenantId(), estimatedTokens);
+        if (!tenantCheck.isAllowed()) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, tenantCheck.getReason());
+        }
+
+        TokenBudgetTracker.BudgetCheckResult taskCheck =
+                budgetTracker.checkTaskBudget(command.getTaskId(), estimatedTokens);
+        if (!taskCheck.isAllowed()) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, taskCheck.getReason());
+        }
+    }
+
+    private long estimateTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return 0;
+        }
+        return Math.max(1, Math.round((text.length() / (double) CHARS_PER_TOKEN) * SAFETY_FACTOR));
+    }
+}

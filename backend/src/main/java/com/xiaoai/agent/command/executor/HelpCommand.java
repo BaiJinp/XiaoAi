@@ -1,20 +1,21 @@
 package com.xiaoai.agent.command.executor;
 
 import com.xiaoai.agent.command.SlashCommandService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * 帮助命令
+ * 甯姪鍛戒护
  */
 @Component
 public class HelpCommand implements CommandExecutor {
 
     private final SlashCommandService slashCommandService;
 
-    public HelpCommand(SlashCommandService slashCommandService) {
+    public HelpCommand(@Lazy SlashCommandService slashCommandService) {
         this.slashCommandService = slashCommandService;
     }
 
